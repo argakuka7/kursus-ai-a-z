@@ -3,6 +3,15 @@
 Kursus Bahasa Indonesia: pelajari cara kerja LLM dari dalam, lalu belajar
 menjalankan agent Hermes di komputermu sendiri.
 
+![Halaman depan](docs/img/landing.png)
+
+30 modul, 25 diagram SVG, 71 istilah kamus, 23 soal kuis, dan 12 lab
+interaktif. Tanpa build step — ES modules asli, satu server statis.
+
+| Modul | Kuis | Kamus |
+|---|---|---|
+| ![Contoh modul](docs/img/modul.png) | ![Halaman kuis](docs/img/kuis.png) | ![Halaman kamus](docs/img/kamus.png) |
+
 ## Isi
 
 ```
@@ -167,5 +176,8 @@ Kalau backend mati, panel otomatis jatuh ke mode simulasi.
 
 ## Lisensi
 
-Konten adaptasi dari sumber di atas, masing-masing dengan lisinya sendiri.
-Kode di repo ini: MIT.
+Kode di repo ini: **MIT** (lihat `LICENSE`).
+
+Aset pihak ketiga yang disertakan tetap pakai lisensinya masing-masing:
+Mermaid (MIT) dan font Fraunces, Karla, JetBrains Mono, Caveat, Outfit,
+Space Grotesk, Plex Sans (SIL Open Font License 1.1).
