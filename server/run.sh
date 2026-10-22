@@ -24,7 +24,8 @@ stop_server() {
   # lain yang kebetulan punya string serupa di command line-nya.
   pkill -f "server/serve.mjs --port ${PORT}\$" 2>/dev/null || true
   pkill -f "server/serve.mjs --port ${PORT_PUBLIK}\$" 2>/dev/null || true
-  pkill -f "cloudflared tunnel --no-autoupdate --url http://127.0.0.1:${PORT_PUBLIK}\$" 2>/dev/null || true
+  # Tunnel Cloudflare sementara dijalankan sebagai service systemd
+  # (kursus-ai-cf-tunnel.service), jadi tidak boleh di-bunuh di sini.
 }
 
 wait_ready() {
@@ -72,14 +73,17 @@ wait_ready "$PORT_PUBLIK" || true
 
 # Link publik lewat Tailscale Funnel. URL-nya tetap sama, tidak seperti
 # quick tunnel Cloudflare yang ganti-ganti tiap restart (dan bisa kena
-# rate limit). Fallback ke quick tunnel kalau funnel tidak tersedia.
+# rate limit).
 if command -v tailscale >/dev/null 2>&1 && tailscale funnel --bg "$PORT_PUBLIK" >/dev/null 2>&1; then
   FUNNEL=1
 else
-  : > /tmp/cf-aiaz.log
-  setsid nohup /usr/local/bin/cloudflared tunnel --no-autoupdate \
-    --url "http://127.0.0.1:$PORT_PUBLIK" > /tmp/cf-aiaz.log 2>&1 < /dev/null &
   FUNNEL=0
+fi
+
+# Tunnel Cloudflare sementara, kalau servicenya ada. Dipakai sebagai
+# link cadangan saat Funnel bermasalah.
+if systemctl list-unit-files kursus-ai-cf-tunnel.service >/dev/null 2>&1; then
+  systemctl start kursus-ai-cf-tunnel.service >/dev/null 2>&1 || true
 fi
 
 # Publish Tailscale.
@@ -91,7 +95,7 @@ fi
 URL=""
 if [ "$FUNNEL" = "0" ]; then
   for _ in $(seq 1 30); do
-    URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cf-aiaz.log 2>/dev/null | head -1)
+    URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cf-kursus.log 2>/dev/null | tail -1)
     [ -n "$URL" ] && break
     sleep 1
   done
@@ -109,6 +113,6 @@ echo "siap"
 [ -n "$HOST" ] && echo "  Tailscale (dengan Hermes): https://${HOST}:${TS_PORT}"
 if [ "$FUNNEL" = "1" ]; then
   [ -n "$HOST" ] && echo "  Publik Funnel (tanpa Hermes): https://${HOST}/"
-else
-  [ -n "$URL" ] && echo "  Cloudflare (tanpa Hermes): ${URL}"
 fi
+CF_URL=$(grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' /tmp/cf-kursus.log 2>/dev/null | tail -1)
+[ -n "$CF_URL" ] && echo "  Cloudflare sementara (tanpa Hermes): ${CF_URL}"

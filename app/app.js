@@ -7,13 +7,13 @@
  *   3. render view sesuai route
  */
 
-import { muatSemua, muatKamus, modulBerikutnya, modulSebelumnya } from "./content.js?v=126";
-import { renderMarkdown, escapeHtml, aktifkanGeserTabel } from "./markdown.js?v=126";
-import { initDiagram, renderMermaid, sisipkanDiagram, pasangViewbox } from "./diagrams.js?v=126";
-import { Router, pasangScrollSpy, scrollKe } from "./router.js?v=126";
-import { pasangLabToken, pasangLabKonteks, pasangLabTool, pasangLabKarakter, pasangLabToolset, pasangLabJadwal, pasangLabMemori, pasangLabMcp, pasangLabSkill, pasangLabDelegasi, pasangLabIzin, pasangLabModel } from "./labs.js?v=126";
-import { buatKuis, bacaProgres, tandaiSelesai, tandaiKuis, hitungSkor } from "./quiz.js?v=126";
-import { SOAL } from "./soal.js?v=126"
+import { muatSemua, muatKamus, modulBerikutnya, modulSebelumnya } from "./content.js?v=129";
+import { renderMarkdown, escapeHtml, aktifkanGeserTabel } from "./markdown.js?v=129";
+import { initDiagram, renderMermaid, sisipkanDiagram, pasangViewbox } from "./diagrams.js?v=129";
+import { Router, pasangScrollSpy, scrollKe } from "./router.js?v=129";
+import { pasangLabToken, pasangLabKonteks, pasangLabTool, pasangLabKarakter, pasangLabToolset, pasangLabJadwal, pasangLabMemori, pasangLabMcp, pasangLabSkill, pasangLabDelegasi, pasangLabIzin, pasangLabModel } from "./labs.js?v=129";
+import { buatKuis, bacaProgres, tandaiSelesai, tandaiKuis, hitungSkor } from "./quiz.js?v=129";
+import { SOAL } from "./soal.js?v=129"
 import { SOAL_AI_ENGINEER } from "./soal-ai.js";
 
 const state = {

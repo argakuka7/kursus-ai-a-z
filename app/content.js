@@ -5,7 +5,7 @@
  * Frontmatter dibaca terpisah, lalu diurutkan berdasarkan field `modul`.
  */
 
-import { parseFrontmatter } from "./markdown.js?v=126";
+import { parseFrontmatter } from "./markdown.js?v=129";
 
 const DIRS = ["ai", "hermes", "penutup"];
 

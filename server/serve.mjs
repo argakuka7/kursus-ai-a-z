@@ -84,6 +84,61 @@ function safeJoin(root, urlPath) {
   return target;
 }
 
+// --- File yang tidak boleh diekspos ------------------------------------
+//
+// Server ini stateless dan bisa dipublish ke internet. Jadi apa pun
+// yang tidak perlu dilihat pengunjung harus ditolak, bukan cuma
+// mengandalkan "tidak ada file-nya".
+
+// Segmen path yang StartsWith "." — menutup .git, .env, .ssh, dan
+// semua file tersembunyi lain di setiap level.
+function adaSegmenTersembunyi(relPath) {
+  return relPath.split(path.sep).some((seg) => seg.startsWith(".") && seg !== "." && seg !== "..");
+}
+
+// Ekstensi yang hanya untukCredential atau metadata internal.
+const EKSTENSI_TERLARANG = new Set([
+  ".env", ".key", ".pem", ".pfx", ".p12", ".crt", ".cer", ".jks", ".keystore",
+  ".log", ".bak", ".swp", ".swo", ".sql", ".dump", ".tar", ".gz", ".zip",
+]);
+
+// Nama file yang tidak boleh bocor meski ekstensinya biasa.
+const NAMA_TERLARANG = new Set([
+  ".env", ".env.local", ".env.production", "id_rsa", "id_ed25519",
+  "credentials", "secrets", "config.yaml", "hosts.yml",
+]);
+
+// Folder yang memang bagian dari website. Folder lain (server/, tools/,
+// docs/, .git/, dan apa pun yang tidak ada di sini) tidak diekspos.
+const FOLDER_PUBLIK = new Set(["app", "content", "diagrams", "docs", "fonts", "vendor"]);
+
+/**
+ * Cek apakah sebuah path relatif aman untuk diekspos.
+ * @param {string} root direktori root server
+ * @param {string} target path absolut hasil resolve
+ * @returns {string|null} "ditolak" atau null kalau boleh
+ */
+function cekPathTerlarang(root, target) {
+  const rel = path.relative(root, target);
+  // Path relatif kosong = root itu sendiri. Itu sah (halaman depan),
+  // bukan error.
+  if (rel === "") return null;
+  if (rel.startsWith("..")) return "path tidak valid";
+  if (adaSegmenTersembunyi(rel)) return "path tersembunyi tidak boleh diakses";
+  const ext = path.extname(rel).toLowerCase();
+  if (EKSTENSI_TERLARANG.has(ext)) return "ekstensi file tidak boleh diakses";
+  const base = path.basename(rel).toLowerCase();
+  if (NAMA_TERLARANG.has(base)) return "nama file tidak boleh diakses";
+  // .env tanpa ekstensi, atau file bernama .env.local
+  if (base.startsWith(".env")) return "file environment tidak boleh diakses";
+  // Hanya folder yang memang bagian dari website.
+  const segmen = rel.split(path.sep);
+  if (segmen.length > 1 && !FOLDER_PUBLIK.has(segmen[0])) {
+    return "folder ini tidak dipublikasikan";
+  }
+  return null;
+}
+
 // --------------------------------------------------------------- Hermes ---
 const HERMES_PROFILE = process.env.HERMES_PROFILE || "kelas-ai";
 const HERMES_BIN = process.env.HERMES_BIN || "hermes";
@@ -255,9 +310,19 @@ const server = http.createServer(async (req, res) => {
   let target = safeJoin(args.root, url);
   if (!target) return send(res, 400, "path tidak valid");
 
+  // Tolak file dan folder yang tidak boleh dipublikasikan.
+  const alasan = cekPathTerlarang(args.root, target);
+  if (alasan) {
+    return send(res, 403, `403 — ${alasan}`);
+  }
+
   try {
     const stat = await fsp.stat(target).catch(() => null);
-    if (stat?.isDirectory()) target = path.join(target, "index.html");
+    if (stat?.isDirectory()) {
+      target = path.join(target, "index.html");
+      const alasan2 = cekPathTerlarang(args.root, target);
+      if (alasan2) return send(res, 403, `403 — ${alasan2}`);
+    }
     await serveFile(res, target);
   } catch {
     // Fallback: index.html untuk route SPA.
