@@ -1,7 +1,7 @@
 # Ringkasan Deliverable — Kursus "AI dari A–Z"
 
 Dibangun: 21 Oktober 2026
-Lokasi: `/root/dev/testing/ai-a-z`
+Lokasi: folder proyek ini
 
 Cara menjalankan: `bash server/run.sh` lalu buka `http://127.0.0.1:4310`.
 
