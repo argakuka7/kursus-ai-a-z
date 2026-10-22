@@ -25,3 +25,6 @@ npm-debug.log*
 .vscode/
 .idea/
 *.swp
+
+# State lokal GitHub CLI
+.local/
