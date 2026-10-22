@@ -1,0 +1,27 @@
+# Screenshot review Oil UI (artefak kerja internal)
+shots/
+
+# Log server
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Rahasia — jangan pernah masuk repo
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+id_rsa*
+secrets/
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Editor
+.vscode/
+.idea/
+*.swp
