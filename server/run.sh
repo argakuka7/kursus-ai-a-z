@@ -61,7 +61,9 @@ stop_server
 sleep 0.6
 
 # Instance 1: Tailscale, Hermes aktif.
-setsid nohup node server/serve.mjs --port "$PORT" > "$LOG" 2>&1 < /dev/null &
+# CHAT_RATE_LIMIT boleh dioverride dari environment (default 8/menit per IP).
+CHAT_RATE_LIMIT="${CHAT_RATE_LIMIT:-8}" \
+  setsid nohup node server/serve.mjs --port "$PORT" > "$LOG" 2>&1 < /dev/null &
 
 # Instance 2: Cloudflare, Hermes dimatikan.
 ENABLE_ASSISTANT=0 setsid nohup node server/serve.mjs --port "$PORT_PUBLIK" > "$LOG_PUBLIK" 2>&1 < /dev/null &
